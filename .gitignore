@@ -8,6 +8,14 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
+# Node.js / npm
+node_modules/
+.npm/
+npm-debug.log*
+dist/
+coverage/
+*.tsbuildinfo
+
 # Editors / OS
 .vscode/
 .idea/
