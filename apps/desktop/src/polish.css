@@ -1,0 +1,552 @@
+/*
+ * Ortheon workstation polish layer.
+ *
+ * This file intentionally sits after styles.css.  The base stylesheet owns the
+ * component geometry; this layer tunes hierarchy, density and finish without
+ * coupling the research UI to another component framework.
+ */
+
+.app-shell {
+  --panel-radius: 8px;
+  --control-radius: 6px;
+  --shadow-soft: 0 10px 32px rgba(0, 0, 0, 0.16);
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.025) inset;
+  grid-template-columns: 272px minmax(690px, 1fr) 348px;
+  grid-template-rows: 64px minmax(0, 1fr) 32px;
+  letter-spacing: -0.006em;
+}
+
+.app-shell[data-theme="light"] {
+  --shadow-soft: 0 10px 32px rgba(55, 72, 82, 0.10);
+  --shadow-panel: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+/* Top bar --------------------------------------------------------------- */
+.topbar {
+  grid-template-columns: 208px 270px minmax(300px, 1fr) auto;
+  gap: 16px;
+  padding: 0 16px;
+  background: color-mix(in srgb, var(--surface-0) 96%, var(--core) 4%);
+  box-shadow: 0 1px 0 var(--line), 0 10px 28px rgba(0, 0, 0, 0.10);
+}
+
+.ortheon-mark {
+  width: 37px;
+  height: 37px;
+}
+
+.wordmark {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.file-tab {
+  height: 40px;
+  padding: 0 12px;
+  border-radius: var(--control-radius);
+  font-size: 12px;
+  box-shadow: var(--shadow-panel);
+}
+
+.file-tab strong {
+  font-size: 12px;
+}
+
+.file-state {
+  font-size: 8px;
+  padding: 3px 6px;
+  background: var(--surface-1);
+}
+
+.global-search {
+  height: 39px;
+  max-width: 560px;
+  border-radius: var(--control-radius);
+  font-size: 12px;
+  background: color-mix(in srgb, var(--surface-1) 88%, transparent);
+  box-shadow: var(--shadow-panel);
+}
+
+.global-search:focus-within,
+.global-search:hover {
+  border-color: var(--line-strong);
+}
+
+.action {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: var(--control-radius);
+  font-size: 11px;
+}
+
+.action.outline {
+  background: transparent;
+  border-color: color-mix(in srgb, var(--core) 42%, var(--line-strong));
+}
+
+.action.primary {
+  box-shadow: 0 4px 18px rgba(73, 222, 219, 0.16);
+}
+
+.icon-button {
+  width: 36px;
+  height: 36px;
+}
+
+/* Sidebar --------------------------------------------------------------- */
+.sidebar {
+  background: color-mix(in srgb, var(--surface-1) 97%, var(--surface-0));
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.project-head {
+  height: 76px;
+  padding: 0 16px;
+}
+
+.project-head strong {
+  font-size: 13px;
+  letter-spacing: -0.015em;
+}
+
+.eyebrow,
+.section-title,
+.inspector-title,
+.dock-heading {
+  font-size: 9px;
+  letter-spacing: 0.13em;
+}
+
+.navigator {
+  padding: 11px 9px 14px;
+}
+
+.nav-row,
+.nav-file {
+  height: 36px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.nav-file.active {
+  position: relative;
+  background: color-mix(in srgb, var(--core-soft) 72%, transparent);
+  color: var(--core);
+}
+
+.nav-file.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 7px;
+  bottom: 7px;
+  width: 2px;
+  border-radius: 2px;
+  background: var(--core);
+}
+
+.sidebar-section {
+  padding: 15px 9px;
+}
+
+.section-title {
+  height: 27px;
+  padding: 0 6px;
+}
+
+/* Enabled means visible, not selected.  Do not paint the whole sidebar cyan. */
+.layer-row {
+  height: 34px;
+  grid-template-columns: 0 19px 7px 1fr auto;
+  gap: 8px;
+  padding: 0 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.layer-row.enabled {
+  background: transparent;
+  color: var(--muted);
+}
+
+.layer-row:hover,
+.layer-row.enabled:hover {
+  background: var(--surface-3);
+  color: var(--text);
+}
+
+.layer-row.enabled > svg {
+  color: var(--core);
+}
+
+.layer-swatch {
+  width: 5px;
+  height: 16px;
+  opacity: 0.92;
+}
+
+.entity-list {
+  gap: 4px;
+}
+
+.entity-row {
+  min-height: 49px;
+  height: auto;
+  border-radius: 7px;
+  padding: 7px 9px;
+}
+
+.entity-row.active {
+  border-color: color-mix(in srgb, var(--core) 52%, transparent);
+  background: linear-gradient(90deg, var(--core-soft), transparent 88%);
+}
+
+.entity-row strong {
+  font-size: 11px;
+}
+
+.entity-row small,
+.entity-row em {
+  font-size: 9px;
+}
+
+.sidebar-footer {
+  height: 39px;
+  font-size: 10px;
+}
+
+/* Main workspace -------------------------------------------------------- */
+.workspace {
+  grid-template-rows: 44px minmax(320px, 1fr) 236px;
+  background: var(--canvas);
+}
+
+.canvas-toolbar {
+  padding: 0 14px;
+  background: color-mix(in srgb, var(--surface-1) 96%, transparent);
+}
+
+.tool {
+  height: 30px;
+  padding: 0 11px;
+  font-size: 10px;
+  border-radius: 5px;
+}
+
+.tool.active {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--core) 18%, transparent) inset;
+}
+
+.canvas-meta {
+  gap: 20px;
+  font-size: 10px;
+}
+
+.canvas-meta button {
+  height: 29px;
+  padding: 0 8px;
+  font-size: 10px;
+}
+
+.canvas-wrap {
+  padding: 22px 24px 20px;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--line) 65%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--line) 65%, transparent) 1px, transparent 1px),
+    radial-gradient(circle at 50% 42%, color-mix(in srgb, var(--core) 3.5%, transparent), transparent 58%);
+  background-size: 28px 28px, 28px 28px, 100% 100%;
+}
+
+.drawing-sheet {
+  border-color: color-mix(in srgb, var(--frame) 26%, transparent);
+  border-radius: 2px;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.20), 0 0 0 1px rgba(255, 255, 255, 0.012) inset;
+}
+
+/* Keep semantic cyan crisp while reducing ambient glow. */
+.annotation.selected .annotation-box,
+.annotation.selected .gdt-box,
+.annotation.selected .datum-box,
+.feature-target.selected circle:first-child {
+  filter: drop-shadow(0 0 3px rgba(73, 222, 219, 0.28));
+}
+
+/* Analysis dock --------------------------------------------------------- */
+.analysis-dock {
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  background: var(--surface-0);
+}
+
+.dock-panel {
+  background: color-mix(in srgb, var(--surface-1) 97%, var(--surface-0));
+}
+
+.dock-heading {
+  height: 40px;
+  padding: 0 14px;
+}
+
+.graph-layout {
+  height: 157px;
+  grid-template-columns: 122px 48px 156px minmax(145px, 1fr);
+  padding: 10px 18px;
+}
+
+.graph-node {
+  min-height: 52px;
+  padding: 9px 11px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--surface-2) 94%, transparent);
+  box-shadow: var(--shadow-panel);
+}
+
+.graph-node.compact {
+  min-height: 36px;
+}
+
+.graph-node strong {
+  font-size: 11px;
+}
+
+.graph-node span {
+  font-size: 9px;
+}
+
+.graph-node.active {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--core) 22%, transparent) inset,
+    0 7px 20px rgba(73, 222, 219, 0.06);
+}
+
+.graph-legend {
+  height: 31px;
+  padding: 0 16px;
+  font-size: 9px;
+}
+
+.issue-tabs {
+  height: 34px;
+  padding: 0 12px;
+  gap: 7px;
+}
+
+.issue-tabs button {
+  font-size: 9px;
+  padding: 5px 8px;
+}
+
+.issue-row {
+  min-height: 52px;
+  padding: 7px 12px;
+  grid-template-columns: 24px 1fr 18px;
+  gap: 9px;
+}
+
+.issue-row strong {
+  font-size: 10px;
+}
+
+.issue-row small {
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+/* Inspector ------------------------------------------------------------- */
+.inspector {
+  padding: 0 14px 18px;
+  background: color-mix(in srgb, var(--surface-1) 98%, var(--surface-0));
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+.inspector-title {
+  height: 44px;
+  margin: 0 -14px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+}
+
+.entity-summary {
+  margin: 14px 0 10px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--surface-2) 94%, var(--core) 6%), var(--surface-1));
+  box-shadow: var(--shadow-panel);
+}
+
+.summary-glyph {
+  width: 54px;
+  height: 54px;
+}
+
+.entity-summary h2 {
+  margin-top: 4px;
+  font-size: 16px;
+  letter-spacing: -0.025em;
+}
+
+.entity-summary p,
+.entity-type {
+  font-size: 9px;
+}
+
+.inspector-tabs {
+  height: 40px;
+  margin: 0 -2px 4px;
+}
+
+.inspector-tabs button {
+  font-size: 9px;
+  letter-spacing: 0.055em;
+  padding: 0 9px;
+}
+
+.properties-grid {
+  margin-top: 8px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--panel-radius);
+  background: color-mix(in srgb, var(--surface-2) 82%, transparent);
+  box-shadow: var(--shadow-panel);
+}
+
+.property {
+  min-height: 38px;
+  padding: 9px 0;
+  grid-template-columns: 92px minmax(0, 1fr);
+  font-size: 10px;
+}
+
+.property strong {
+  font-size: 10px;
+}
+
+.inspector-section {
+  margin-top: 15px;
+}
+
+.inspector-section-title {
+  margin-bottom: 8px;
+  font-size: 9px;
+  letter-spacing: 0.115em;
+}
+
+.evidence-row {
+  min-height: 34px;
+  font-size: 9px;
+}
+
+.candidate-row {
+  min-height: 54px;
+  margin-bottom: 6px;
+  padding: 8px 10px;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--surface-2) 90%, transparent);
+  box-shadow: var(--shadow-panel);
+}
+
+.candidate-row:hover {
+  border-color: color-mix(in srgb, var(--core) 42%, var(--line-strong));
+  background: color-mix(in srgb, var(--core-soft) 42%, var(--surface-2));
+}
+
+.candidate-row strong {
+  font-size: 10px;
+}
+
+.candidate-row small,
+.candidate-row em {
+  font-size: 9px;
+}
+
+.model-row {
+  min-height: 52px;
+  padding: 8px 9px;
+  margin-bottom: 6px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--surface-2) 85%, transparent);
+}
+
+.model-row strong {
+  font-size: 10px;
+}
+
+.model-row small,
+.model-row em {
+  font-size: 8px;
+}
+
+.overall-confidence {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 7px;
+  background: var(--surface-2);
+}
+
+.correction-card {
+  margin-top: 16px;
+  border-color: color-mix(in srgb, var(--core) 30%, var(--line));
+  border-radius: var(--panel-radius);
+  background: linear-gradient(135deg, var(--core-soft), color-mix(in srgb, var(--surface-2) 92%, transparent));
+}
+
+.correction-card button {
+  height: 32px;
+  border-radius: 6px;
+  font-size: 9px;
+}
+
+.empty-state.large,
+.eir-preview {
+  margin-top: 12px;
+  border-radius: var(--panel-radius);
+}
+
+.statusbar {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 9px;
+  background: var(--surface-0);
+}
+
+/* Large-screen breathing room. */
+@media (min-width: 1700px) {
+  .app-shell {
+    grid-template-columns: 286px minmax(760px, 1fr) 372px;
+  }
+
+  .canvas-wrap {
+    padding: 26px 30px 24px;
+  }
+
+  .inspector {
+    padding-left: 17px;
+    padding-right: 17px;
+  }
+}
+
+/* Preserve usability on laptop-size windows without reverting to tiny text. */
+@media (max-width: 1360px) {
+  .app-shell {
+    grid-template-columns: 242px minmax(620px, 1fr) 316px;
+  }
+
+  .topbar {
+    grid-template-columns: 190px 230px minmax(240px, 1fr) auto;
+    gap: 10px;
+    padding: 0 10px;
+  }
+
+  .action {
+    padding: 0 10px;
+  }
+
+  .global-search {
+    max-width: 430px;
+  }
+}
