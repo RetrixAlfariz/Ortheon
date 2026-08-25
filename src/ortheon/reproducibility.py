@@ -21,7 +21,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-
 DEFAULT_SEED = 42
 _EXPERIMENT_PART = re.compile(r"[^a-z0-9.-]+")
 
