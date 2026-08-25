@@ -2,24 +2,118 @@
 
 This directory is the planning and progress control center for Ortheon.
 
-Ortheon is being developed as a **standards-aware visual engineering parser** that converts technical drawings into a structured, traceable Engineering Intermediate Representation (EIR) suitable for deterministic validation, engineering tools, small engineering language models, and larger reasoning models.
+Ortheon is being developed as a **standards-aware visual engineering parser** that converts technical drawings into a structured, traceable Engineering Intermediate Representation (EIR). That representation is then available to deterministic standards/tools and to separate language-model reasoning systems.
 
-The roadmap is deliberately staged. Ortheon should not jump directly from an image to a giant multimodal model. Each release must establish a reliable layer that the next release can depend on.
+The roadmap is deliberately staged. Each release must establish a reliable layer that the next release can depend on. A model checkpoint existing is not, by itself, a completed milestone. Humanity has tried that accounting method already.
 
 ---
 
 ## Files in this directory
 
-- [`README.md`](README.md) — long-term version roadmap, scope, release gates, and acceptance criteria.
+- [`README.md`](README.md) — long-term version roadmap, architectural boundaries, release gates, and acceptance criteria.
 - [`status.md`](status.md) — live project status: primary focus, side focus, work in progress, blockers, and next tasks.
 
 The live status file should be updated whenever the active development focus changes.
 
 ---
 
+# Non-negotiable model boundary
+
+Ortheon has **two separate custom-model research tracks**. They must not be merged conceptually or described as one combined checkpoint.
+
+## 1. Ortheon-One — visual semantic parser
+
+Ortheon-One is Ortheon's own unified visual engineering model.
+
+Its responsibility is:
+
+```text
+ENGINEERING DRAWING
+        |
+        v
+   ORTHEON-ONE
+        |
+        v
+semantic engineering parse
+        |
+        v
+      EIR / EDL
+```
+
+Target responsibilities include:
+
+- engineering OCR/token recognition,
+- primitive and feature detection,
+- geometry prediction,
+- dimension/tolerance/GD&T parsing,
+- datum and annotation recognition,
+- engineering entity construction,
+- relation prediction,
+- constraint recovery,
+- confidence and ambiguity prediction,
+- structured EIR/EDL generation.
+
+Ortheon-One belongs to the **perception + semantic parsing side** of the system.
+
+It does **not** own general engineering dialogue, broad engineering reasoning, or downstream tool orchestration.
+
+## 2. Engineering MicroLM — downstream language model
+
+The Engineering MicroLM is a different model trained to consume the semantic representation already produced by Ortheon.
+
+Its responsibility is:
+
+```text
+EIR / EDL
+   |
+   v
+ENGINEERING MICROLM
+   |
+   +--> EIR queries
+   +--> relation lookup
+   +--> constraint comparison
+   +--> structured explanation
+   +--> uncertainty-aware routing
+   `--> engineering tool calls
+```
+
+The MicroLM belongs to the **reasoning / interaction side** of the system.
+
+The current research target is approximately **100M-500M parameters**, subject to benchmarking. The hypothesis is not that a 100M-500M model magically becomes a universal engineer. The hypothesis is that a clean semantic engineering representation drastically reduces the amount of model capacity needed for many routine engineering-information tasks.
+
+## Combined architecture
+
+```text
+                              PARSING
+
+Engineering Drawing
+        |
+        +--> modular teacher parser --------+
+        |                                    |
+        `--> Ortheon-One --------------------+----> EIR / EDL
+                                                   |
+                              REASONING / ACTION   |
+                                                   |
+                 +---------------------------------+------------------+
+                 |                                 |                  |
+                 v                                 v                  v
+        deterministic tools               Engineering MicroLM   Large Reasoner
+        + standards engine                   100M-500M          2B+ / frontier
+```
+
+The modular parser and Ortheon-One are **alternative producers of the same semantic contract**. The MicroLM and larger reasoners are **consumers of that contract**.
+
+### Hard rule
+
+> **Ortheon-One parses the drawing. MicroLM reasons over Ortheon's semantic parse. They are separate models, separate checkpoints, separate training objectives, and separate evaluation tracks.**
+
+This distinction should be preserved in documentation, code organization, model manifests, experiment naming, UI labels, and benchmark reporting.
+
+---
+
 # Development philosophy
 
-Ortheon follows this processing hierarchy:
+The core parsing hierarchy is:
 
 ```text
 Drawing / PDF / CAD source
@@ -46,18 +140,14 @@ P5  Engineering constraints
 P6  Standards interpretation
         |
         v
-     Engineering IR
+   EIR / EDL boundary
         |
-        +-------------------+
-        |                   |
-        v                   v
-Engineering MicroLM   Large Engineering Reasoner
-        |                   |
-        +---------+---------+
-                  |
-                  v
-           Engineering tools
+        +--> deterministic standards + tools
+        +--> Engineering MicroLM
+        `--> larger engineering reasoners
 ```
+
+P0-P6 describe engineering information recovery. P7 reasoning happens **after the EIR/EDL boundary** and may be performed by deterministic tools, MicroLM, larger models, or human review.
 
 The central rule is:
 
@@ -65,41 +155,81 @@ The central rule is:
 
 ---
 
+# Technology ownership
+
+The planned implementation stack is intentionally split by responsibility.
+
+```text
+Python
+├── dataset research and normalization
+├── model training
+├── OCR/CV experiments
+├── modular teacher models
+├── Ortheon-One training
+├── MicroLM training
+└── evaluation/research utilities
+
+Rust
+├── EIR core as schemas stabilize
+├── EDL parser/compiler
+├── geometry/relation runtime
+├── standards/rule engine
+├── high-throughput indexing/preprocessing
+├── native application backend
+└── CLI/runtime utilities
+
+Desktop UI
+├── Tauri
+├── Rust backend
+├── React/TypeScript frontend
+└── drawing/EIR inspection and human correction
+```
+
+Python dependency management should use **uv**. Model weights and large datasets are never implicit install dependencies.
+
+---
+
+# Interface strategy
+
+Ortheon is UI-first for visual inspection and correction, while retaining APIs/CLI for automation.
+
+The desktop Engineering Inspector should eventually synchronize:
+
+```text
+DRAWING VIEW
+     <->
+EIR / RELATION GRAPH
+     <->
+ENTITY / CONSTRAINT INSPECTOR
+```
+
+Human corrections should preserve provenance and become candidates for Ortheon-Parse supervision rather than disappearing as UI-only state.
+
+The UI must remain useful before model weights exist. During early milestones it can operate on fixtures, manually encoded EIR, dataset samples, and later real parser outputs.
+
+---
+
 # Versioning policy
 
-Ortheon uses semantic-style versioning for research milestones:
+Ortheon uses semantic-style research versions:
 
 ```text
 MAJOR.MINOR.PATCH
 ```
 
-Interpretation for this project:
+- **MAJOR** — major architectural generation or supported engineering domain.
+- **MINOR** — new research capability or subsystem.
+- **PATCH** — stabilization, schema refinement, benchmark hardening, or completion of a minor milestone.
 
-- **MAJOR** — a major architectural generation or supported engineering domain.
-- **MINOR** — a new research capability or subsystem.
-- **PATCH** — stabilization, dataset/schema refinement, benchmark hardening, or completion of a minor milestone.
-
-Examples:
-
-```text
-1.4.0  Relation parsing becomes available.
-1.4.1  Relation dataset/schema and benchmark are stabilized.
-2.0.0  Ortheon expands beyond mechanical technical drawings.
-```
-
-A version is not considered complete because code exists. It is complete only when its **release gate** is satisfied.
+A version is complete only when its **release gate** is satisfied.
 
 ---
 
 # v1 research objective
 
-## Ortheon v1
-
 **Primary domain:** 2D mechanical manufacturing drawings.
 
-The v1 generation should establish that Ortheon can convert a technical drawing into a traceable engineering representation without relying on an unconstrained end-to-end hallucination-prone VLM pipeline.
-
-The expected v1 transformation is:
+The v1 generation should establish that Ortheon can convert a technical drawing into a traceable engineering representation without relying on an unconstrained image-to-answer VLM pipeline.
 
 ```text
 technical drawing
@@ -114,11 +244,11 @@ engineering entities
 relations + constraints
       |
       v
-EIR
+EIR / EDL
       |
-      +--> deterministic validation
-      +--> engineering queries
-      +--> language-model reasoning
+      +--> deterministic validation/tools
+      +--> MicroLM reasoning
+      `--> larger-model reasoning
 ```
 
 Explicitly out of scope for early v1:
@@ -128,10 +258,8 @@ Explicitly out of scope for early v1:
 - architectural plan understanding,
 - complete automatic 3D CAD reconstruction,
 - arbitrary handwritten drawings,
-- standards-compliance certification,
-- replacing engineering judgment.
-
-These may become later major-version work.
+- certification-grade standards compliance,
+- replacing professional engineering judgment.
 
 ---
 
@@ -146,25 +274,19 @@ Define what Ortheon is before implementation begins.
 ### Deliverables
 
 - project thesis and scope,
-- processing hierarchy P0-P7,
-- preliminary Ortheon architecture,
+- P0-P7 research hierarchy,
 - modular teacher-system concept,
-- Ortheon-One long-term unified-model concept,
+- **Ortheon-One as a future unified visual parser**,
+- **MicroLM as a separate downstream structured-input model**,
 - dataset strategy,
 - development roadmap,
 - live project status tracking.
 
-### Research questions established
-
-1. How accurately can engineering primitives and annotations be recovered from raster and vector drawings?
-2. How accurately can annotations be associated with their intended geometric features?
-3. Does an explicit EIR improve engineering reasoning compared with direct image-to-answer VLM reasoning?
-4. Can a sub-billion-parameter engineering model operate effectively when supplied with high-quality structured engineering input?
-5. Which parts of the pipeline should remain deterministic and which benefit from learned models?
-
 ### Release gate
 
-v1.0.0 is complete when the scope, data strategy, version roadmap, and initial EIR requirements are documented well enough that implementation does not depend on undocumented assumptions.
+Scope, data strategy, architectural boundaries, roadmap, and initial EIR requirements are documented well enough that implementation does not depend on undocumented assumptions.
+
+**Status: DONE.**
 
 ---
 
@@ -174,22 +296,24 @@ v1.0.0 is complete when the scope, data strategy, version roadmap, and initial E
 
 Make research reproducible before datasets and model artifacts begin accumulating.
 
-### Planned work
+### Deliverables
 
-- standard project directory structure,
-- `.gitignore` for datasets, caches, checkpoints, and generated artifacts,
-- environment definition,
+- standard repository structure,
+- `.gitignore` for datasets/caches/checkpoints/generated artifacts,
+- project/environment definition,
 - experiment naming convention,
-- dataset manifest convention,
-- model/checkpoint manifest convention,
+- dataset/model manifest conventions,
 - deterministic seed policy,
 - hardware/runtime metadata capture,
 - logging format,
-- citation/provenance rules.
+- citation/provenance rules,
+- CI smoke tests.
 
 ### Release gate
 
-A fresh clone can reproduce the repository structure and understand where data, models, outputs, and experiments belong without committing large artifacts into Git.
+A fresh clone can determine where data, models, outputs, and experiments belong and can execute the foundation checks without committing large artifacts into Git.
+
+**Status: DONE.**
 
 ---
 
@@ -199,11 +323,9 @@ A fresh clone can reproduce the repository structure and understand where data, 
 
 ### Goal
 
-Turn `dataset/README.md` from a research plan into a reproducible data-acquisition system.
+Turn `dataset/README.md` into a reproducible data-acquisition system.
 
 ### Primary datasets
-
-Initial priority:
 
 1. MechVQA
 2. TriView-CAD
@@ -211,24 +333,22 @@ Initial priority:
 4. Fusion 360 Gallery reconstruction subset
 5. ABC subset
 
-Supporting datasets are introduced only when their supervision is needed.
-
 ### Planned work
 
 - `dataset/manifests/`,
-- dataset source URLs and citations,
+- source URLs and citations,
 - license metadata,
 - version identifiers,
-- expected checksums when available,
-- download scripts,
-- resumable downloads where practical,
-- local raw/processed/cache layout,
-- dataset availability checks,
-- storage estimation before download.
+- expected checksums where available,
+- resumable acquisition where practical,
+- raw/processed/cache layout,
+- availability checks,
+- storage estimation before download,
+- uv-based Python tooling.
 
 ### Release gate
 
-At least the first three core datasets can be reproducibly acquired or registered through manifests without manually reconstructing download steps.
+At least the first three core datasets can be reproducibly registered/acquired without manually reconstructing their download procedure.
 
 ---
 
@@ -236,7 +356,7 @@ At least the first three core datasets can be reproducibly acquired or registere
 
 ### Goal
 
-Ensure downloaded data is trustworthy enough for experiments.
+Ensure acquired data is trustworthy enough for experiments.
 
 ### Planned work
 
@@ -244,27 +364,16 @@ Ensure downloaded data is trustworthy enough for experiments.
 - corrupted/missing sample detection,
 - duplicate detection,
 - split validation,
-- dataset statistics,
+- statistics,
 - schema inspection,
 - normalization adapters,
 - provenance metadata,
 - generated data cards,
-- storage and preprocessing reports.
+- storage/preprocessing reports.
 
 ### Release gate
 
-Every dataset used in an experiment can report:
-
-```text
-source
-version
-license status
-sample count
-split sizes
-schema
-checksum/integrity state
-normalization version
-```
+Every experimental dataset can report its source, version, license status, sample/split counts, schema, integrity state, and normalization version.
 
 ---
 
@@ -272,7 +381,7 @@ normalization version
 
 ### Goal
 
-Formalize the project-native P0-P7 annotation system.
+Formalize the project-native P0-P7 annotation system that will eventually supervise both modular parsing experiments and Ortheon-One.
 
 ### Planned work
 
@@ -280,7 +389,7 @@ Formalize the project-native P0-P7 annotation system.
 - engineering entity ontology,
 - relation vocabulary,
 - constraint vocabulary,
-- source-evidence references,
+- evidence references,
 - confidence representation,
 - ambiguity representation,
 - annotation guidelines,
@@ -299,20 +408,18 @@ Two independent implementations can read the same Ortheon-Parse record and recon
 
 ### Goal
 
-Create the stable intermediate representation that separates perception models from downstream engineering reasoning.
+Create the stable intermediate representation separating visual parsers from downstream engineering reasoning.
 
 ### EIR must represent
 
-- sheets,
-- views,
+- sheets and views,
 - geometric primitives,
 - engineering features,
 - text/tokens,
-- dimensions,
-- tolerances,
+- dimensions and tolerances,
 - GD&T entities,
 - datums,
-- surface annotations,
+- surface/thread annotations,
 - relations,
 - constraints,
 - units,
@@ -322,29 +429,28 @@ Create the stable intermediate representation that separates perception models f
 ### Planned work
 
 - canonical IDs,
-- typed entity schema,
-- typed relation schema,
+- typed entity/relation schema,
 - coordinate conventions,
 - unit normalization,
-- serialization format,
+- serialization,
 - schema validator,
 - minimal example corpus.
 
+A Python reference may establish behavior first. Rust becomes appropriate as the contract stabilizes.
+
 ### Release gate
 
-A representative drawing can be manually encoded into EIR without losing the engineering relationships required for downstream reasoning.
+A representative drawing can be manually encoded into EIR without losing relationships required for downstream engineering use.
 
 ---
 
-## v1.2.1 — Confidence, ambiguity, and provenance
+## v1.2.1 — Confidence, ambiguity, provenance + Rust core entry
 
 ### Goal
 
-Prevent uncertain perception from silently becoming certain engineering facts.
+Prevent uncertain perception from silently becoming certain engineering facts and begin stabilizing the runtime core.
 
-### Planned work
-
-Each extracted value or relation should support:
+Each extracted value/relation must support concepts equivalent to:
 
 ```text
 value
@@ -355,25 +461,21 @@ alternatives
 ambiguity state
 ```
 
+### Rust entry point
+
+Once the canonical EIR contract is stable enough, introduce typed Rust structures for the EIR/runtime boundary rather than prematurely rewriting experimental Python schemas.
+
 ### Release gate
 
-A downstream consumer can distinguish:
-
-- directly observed evidence,
-- parsed interpretation,
-- inferred relation,
-- standards-derived meaning,
-- unresolved ambiguity.
+Downstream consumers can distinguish observed evidence, parsed interpretation, inferred relation, standards-derived meaning, and unresolved ambiguity.
 
 ---
 
-## v1.2.2 — EDL serialization
+## v1.2.2 — EDL serialization/compiler
 
 ### Goal
 
-Create a compact Engineering Description Language (EDL) optimized for human inspection and language-model input.
-
-### Example direction
+Create a compact Engineering Description Language optimized for inspection and language-model input.
 
 ```text
 @feature H1 type=HOLE
@@ -384,15 +486,16 @@ Create a compact Engineering Description Language (EDL) optimized for human insp
 ### Planned work
 
 - EDL grammar,
-- EIR -> EDL compiler,
+- EIR -> EDL serialization,
 - EDL -> EIR parser,
-- syntax validation,
+- syntax/semantic validation,
 - canonical formatting,
-- token-efficiency benchmark against JSON.
+- token-efficiency benchmark against JSON,
+- Rust parser/compiler where the grammar is stable.
 
 ### Release gate
 
-EIR and EDL round-trip without semantic loss for the supported v1 schema.
+EIR and EDL round-trip without semantic loss for the supported schema.
 
 ---
 
@@ -402,39 +505,27 @@ EIR and EDL round-trip without semantic loss for the supported v1 schema.
 
 ### Goal
 
-Produce a common `VisualPrimitive` layer regardless of source format.
+Produce a common visual-primitive layer regardless of source format.
 
 ### Vector path
 
-Planned support:
-
 - vector PDF,
 - SVG,
-- DXF where practical.
-
-Preserve native text and geometry instead of rasterizing and rediscovering them.
+- DXF where practical,
+- preserve native text/geometry rather than rasterizing them.
 
 ### Raster path
 
-Planned support:
-
-- PNG,
-- JPEG,
-- TIFF,
-- scanned PDF pages.
-
-### Raster processing
-
-- deskew,
-- denoise,
-- scale normalization,
+- PNG/JPEG/TIFF,
+- scanned PDF,
+- deskew/denoise/scale normalization,
 - line preservation,
-- primitive detection,
-- OCR region preparation.
+- primitive extraction,
+- OCR-region preparation.
 
 ### Release gate
 
-Raster and vector examples produce a normalized primitive representation consumable by the same downstream parser interfaces.
+Raster and vector examples produce normalized primitives consumable by the same downstream parser interface.
 
 ---
 
@@ -442,23 +533,22 @@ Raster and vector examples produce a normalized primitive representation consuma
 
 ### Goal
 
-Establish measured baselines before developing Ortheon-specific models.
+Establish measured specialist baselines before developing Ortheon-One.
 
-### Planned baselines
+### Candidate baselines
 
-- PP-OCR family or current equivalent,
-- oriented object detector baseline,
+- current PP-OCR family or equivalent,
+- oriented engineering-annotation detector,
 - deterministic geometry extraction,
-- optional specialist document parser for tables/title blocks.
+- optional document/table parser for title/revision blocks.
 
 ### Metrics
 
 - CER/WER,
-- detection precision/recall,
-- mAP where applicable,
+- detection precision/recall/mAP,
 - geometry deviation,
 - latency,
-- VRAM/RAM usage.
+- RAM/VRAM usage.
 
 ### Release gate
 
@@ -470,11 +560,9 @@ Baseline performance is reproducibly measured on a fixed Ortheon evaluation subs
 
 ### Goal
 
-Make perception failures inspectable.
+Make perception failures inspectable through the Engineering Inspector UI.
 
-### Planned outputs
-
-For each processed drawing:
+Expected artifacts may include:
 
 ```text
 drawing.eir.json
@@ -482,18 +570,11 @@ drawing.debug.png
 drawing.metrics.json
 ```
 
-Debug overlays should show:
-
-- OCR regions,
-- detected engineering annotations,
-- geometry primitives,
-- IDs,
-- confidence,
-- candidate associations.
+UI/debug overlays should expose OCR regions, annotations, primitives, IDs, confidence, and candidate associations.
 
 ### Release gate
 
-A failed parse can be visually diagnosed without stepping through model tensors or raw logs.
+A failed parse can be visually diagnosed without inspecting raw model tensors/logs.
 
 ---
 
@@ -505,16 +586,14 @@ A failed parse can be visually diagnosed without stepping through model tensors 
 
 Convert tokens and primitives into typed engineering entities.
 
-### Initial entity targets
+Initial targets:
 
-- linear dimensions,
-- diameter dimensions,
-- radius dimensions,
+- linear/diameter/radius dimensions,
 - tolerances,
 - thread annotations,
 - datum indicators,
 - GD&T frames,
-- surface-finish annotations,
+- surface finish,
 - title-block fields,
 - view labels.
 
@@ -528,9 +607,7 @@ Supported annotations can be represented as structured entities rather than raw 
 
 ### Goal
 
-Determine what annotations apply to.
-
-### Initial relations
+Determine what annotations and constraints apply to.
 
 ```text
 annotation -> feature
@@ -542,39 +619,25 @@ feature -> view
 view -> sheet
 ```
 
-### Initial approach
-
-Use deterministic spatial/topological heuristics first:
-
-- proximity,
-- orientation,
-- intersection,
-- leader direction,
-- containment,
-- alignment,
-- view boundaries.
-
-Learned relation models should be added only after a trustworthy labeled relation dataset exists.
+Start with deterministic spatial/topological heuristics: proximity, orientation, intersection, leader direction, containment, alignment, and view boundaries. Learned relation prediction is introduced only when a trustworthy relation dataset exists.
 
 ### Metrics
 
-- relation precision,
-- relation recall,
-- relation F1,
+- relation precision/recall/F1,
 - ambiguity rate,
 - incorrect-confident-association rate.
 
 ### Release gate
 
-The system can correctly associate a useful subset of dimensions and annotations with their intended features on the golden evaluation set.
+A useful subset of dimensions/annotations is correctly associated with intended features on the golden evaluation set.
 
 ---
 
-## v1.4.2 — Ortheon-Parse alpha
+## v1.4.2 — Ortheon-Parse alpha + correction capture
 
 ### Goal
 
-Create the first project-native dataset containing real parsing supervision.
+Create the first project-native parsing dataset containing real supervision.
 
 ### Planned contents
 
@@ -582,11 +645,12 @@ Create the first project-native dataset containing real parsing supervision.
 - manually verified real drawing samples,
 - P1-P5 labels,
 - relation graph,
-- confidence/provenance fields.
+- confidence/provenance,
+- human corrections captured through the Inspector where practical.
 
 ### Release gate
 
-The relation and parsing experiments no longer depend only on third-party datasets or weak labels.
+Parsing/relation experiments no longer depend only on third-party datasets or weak labels.
 
 ---
 
@@ -596,20 +660,7 @@ The relation and parsing experiments no longer depend only on third-party datase
 
 ### Goal
 
-Separate standards interpretation from learned model weights.
-
-### Initial standards focus
-
-Mechanical drawing subsets relevant to:
-
-- representation,
-- dimensions,
-- tolerancing,
-- GD&T.
-
-Profiles should identify exact standard family, identifier, and edition.
-
-### Planned architecture
+Keep standards interpretation deterministic and outside learned model weights.
 
 ```text
 EIR constraint
@@ -622,12 +673,14 @@ rule engine
       |
       +--> interpretation
       +--> validation result
-      +--> rule provenance
+      `--> rule provenance
 ```
+
+Rust is the preferred long-term implementation for stable standards/rule evaluation.
 
 ### Release gate
 
-At least one supported rule subset can produce deterministic, versioned, traceable interpretations from EIR.
+At least one mechanical-rule subset produces deterministic, versioned, traceable interpretations from EIR.
 
 ---
 
@@ -637,16 +690,7 @@ At least one supported rule subset can produce deterministic, versioned, traceab
 
 Make every standards-derived conclusion auditable.
 
-### Planned fields
-
-- rule ID,
-- standard identifier,
-- edition,
-- input entities,
-- result,
-- severity,
-- evidence,
-- unresolved assumptions.
+Required concepts include rule ID, standard identifier/edition, input entities, result, severity, evidence, and unresolved assumptions.
 
 ### Release gate
 
@@ -654,24 +698,28 @@ No standards result is emitted without identifying which rule/profile produced i
 
 ---
 
-# v1.6.x — Ortheon-One unified parser research
+# v1.6.x — Ortheon-One unified visual parser
+
+> **This milestone is only about the visual/semantic parser. It does not contain or train the Engineering MicroLM.**
 
 ## v1.6.0 — Ortheon-One prototype
 
 ### Goal
 
-Test whether a single unified trainable model can recover multiple layers of engineering structure.
+Test whether one unified trainable model can recover the same engineering structure produced by the modular teacher pipeline.
 
-The modular v1.3-v1.5 system becomes the teacher/baseline.
+The modular v1.3-v1.5 pipeline becomes the teacher/baseline.
 
-### Candidate unified tasks
+### Candidate Ortheon-One tasks
 
-- token recognition,
+- engineering token recognition,
 - primitive/entity detection,
 - geometry prediction,
-- entity parsing,
+- engineering entity parsing,
 - relation prediction,
-- EDL generation.
+- constraint recovery,
+- confidence/ambiguity prediction,
+- EDL/EIR generation.
 
 ### Architecture direction
 
@@ -688,25 +736,36 @@ shared engineering representation
     +------+-----+------+
            |
            v
-   relation reasoning
+    relation reasoning
            |
            v
        EDL / EIR
 ```
 
+### Explicit exclusions
+
+Ortheon-One does not need to perform:
+
+- open-ended engineering chat,
+- broad multidisciplinary language reasoning,
+- final tool orchestration,
+- standards rules that can be represented deterministically.
+
+Those are downstream responsibilities.
+
 ### Release gate
 
-A unified model can be evaluated fairly against the modular teacher system using identical EIR-level metrics.
+Ortheon-One can be evaluated fairly against the modular teacher using identical EIR-level parsing metrics.
 
 ---
 
-## v1.6.1 — Distillation and model-size study
+## v1.6.1 — Ortheon-One model-size/distillation study
 
 ### Goal
 
-Measure how much engineering structure can be retained as model size decreases.
+Measure how much **visual parsing capability** survives as Ortheon-One is compressed.
 
-### Candidate size bands
+Candidate size bands:
 
 ```text
 ~100M
@@ -715,11 +774,11 @@ Measure how much engineering structure can be retained as model size decreases.
 ~750M
 ```
 
-Exact sizes are experimental, not promises.
+These are Ortheon-One parser variants, **not MicroLM variants**.
 
 ### Measurements
 
-- OCR accuracy,
+- OCR/token accuracy,
 - entity F1,
 - relation F1,
 - Engineering Constraint Recovery,
@@ -730,17 +789,31 @@ Exact sizes are experimental, not promises.
 
 ### Release gate
 
-Ortheon has a defensible answer to whether unified sub-billion parsing is competitive with the modular system for supported tasks.
+Ortheon has a defensible answer to whether unified sub-billion **visual parsing** is competitive with the modular teacher system.
 
 ---
 
-# v1.7.x — Engineering language-model interface
+# v1.7.x — Separate Engineering MicroLM
+
+> **MicroLM receives EIR/EDL from Ortheon. It is not a component/head of Ortheon-One.**
 
 ## v1.7.0 — Engineering MicroLM research
 
 ### Goal
 
-Test the central hypothesis that high-quality EIR/EDL allows a genuinely small language model to perform useful engineering interaction.
+Test whether high-quality EIR/EDL allows a genuinely small **language model** to perform useful engineering interaction.
+
+### Input boundary
+
+Default MicroLM input:
+
+```text
+validated/relevant EIR or EDL
++ optional standards/tool context
++ user request
+```
+
+The MicroLM should not be trained as the primary drawing parser. Raw pixels are not its normal input contract.
 
 ### Candidate model range
 
@@ -756,11 +829,17 @@ Approximately **100M-500M parameters**, subject to benchmarking.
 - tool routing,
 - standards-result explanation.
 
-The MicroLM is not intended to replace broad engineering reasoning.
+### Training directions
+
+- EIR/EDL -> answer,
+- EIR/EDL + request -> structured query,
+- EIR/EDL + request -> tool call,
+- engineering prose -> constrained EDL/query where useful,
+- teacher-model distillation without requiring hidden chain-of-thought supervision.
 
 ### Release gate
 
-A sub-billion model demonstrably outperforms equivalent raw-text/OCR-only input on a defined structured engineering QA benchmark.
+A sub-billion MicroLM demonstrates useful structured engineering interaction and outperforms equivalent raw-text/OCR-only input on a defined benchmark.
 
 ---
 
@@ -768,9 +847,7 @@ A sub-billion model demonstrably outperforms equivalent raw-text/OCR-only input 
 
 ### Goal
 
-Route difficult problems to larger reasoning models without making them mandatory for routine work.
-
-### Planned routing states
+Route requests among deterministic logic, MicroLM, larger reasoning models, and human review.
 
 ```text
 DETERMINISTIC
@@ -779,17 +856,11 @@ LARGE_REASONER
 HUMAN_REVIEW
 ```
 
-Escalation signals may include:
-
-- low parse confidence,
-- unresolved relations,
-- multidisciplinary reasoning requirement,
-- complex design trade-offs,
-- unsupported standards rules.
+Escalation signals may include low parse confidence, unresolved relations, unsupported standards rules, multidisciplinary reasoning requirements, or complex design trade-offs.
 
 ### Release gate
 
-A request can be routed based on uncertainty and task complexity while preserving EIR provenance across model boundaries.
+Requests can be routed by uncertainty/task complexity while preserving EIR provenance across every boundary.
 
 ---
 
@@ -799,21 +870,21 @@ A request can be routed based on uncertainty and task complexity while preservin
 
 ### Goal
 
-Allow reasoning systems to use deterministic engineering computation rather than improvising numerical results.
+Allow reasoning systems to call deterministic engineering computation instead of improvising numerical results.
 
-### Candidate tool categories
+Candidate tool categories:
 
 - unit conversion,
 - tolerance stack-up,
-- geometric calculations,
-- material-property lookup,
+- geometry calculations,
+- material lookup,
 - CAD queries,
 - numerical solvers,
 - later FEA/SPICE integrations.
 
 ### Release gate
 
-The language-model layer can request structured tool execution and consume results without bypassing EIR provenance.
+MicroLM or larger reasoners can request structured tool execution and consume results without bypassing EIR provenance.
 
 ---
 
@@ -821,9 +892,9 @@ The language-model layer can request structured tool execution and consume resul
 
 ### Goal
 
-Export parsed drawings into useful machine-readable geometry.
+Export parsed drawings into useful machine-readable representations.
 
-### Initial targets
+Initial targets:
 
 - JSON/EIR,
 - EDL,
@@ -832,7 +903,7 @@ Export parsed drawings into useful machine-readable geometry.
 
 ### Release gate
 
-A supported drawing can be round-tripped into a structured 2D representation with measurable geometric and annotation fidelity.
+A supported drawing can be reconstructed into structured 2D output with measurable geometry/annotation fidelity.
 
 ---
 
@@ -842,9 +913,9 @@ A supported drawing can be round-tripped into a structured 2D representation wit
 
 ### Goal
 
-Evaluate Ortheon as an engineering-information system rather than a collection of isolated models.
+Evaluate Ortheon as an engineering-information system rather than as isolated models.
 
-### Core metrics
+### Core parsing metrics
 
 - OCR CER/WER,
 - primitive geometry error,
@@ -854,24 +925,40 @@ Evaluate Ortheon as an engineering-information system rather than a collection o
 - standards interpretation accuracy,
 - EIR validity,
 - hallucination/error rate,
-- latency,
-- memory,
+- latency/memory,
 - **Engineering Constraint Recovery (ECR)**.
 
-### Main system comparison
+### Parsing comparison
 
 ```text
-A. Generic VLM: image -> answer
-B. Engineering VLM: image -> answer
-C. Modular Ortheon -> EIR -> language model
-D. Ortheon-One -> EIR -> language model
-E. Ortheon -> EIR -> Engineering MicroLM
-F. Ortheon -> EIR -> larger engineering reasoner
+P1. Specialist modular teacher pipeline -> EIR
+P2. Ortheon-One -> EIR
 ```
+
+This comparison evaluates **drawing understanding**, not language reasoning.
+
+### Downstream reasoning comparison
+
+```text
+R1. Generic VLM: image -> answer
+R2. Engineering VLM: image -> answer
+R3. Modular Ortheon -> EIR -> general LLM
+R4. Ortheon-One -> EIR -> general LLM
+R5. Ortheon parser -> EIR -> Engineering MicroLM
+R6. Ortheon parser -> EIR -> larger engineering reasoner
+```
+
+This separation prevents a MicroLM result from being misreported as Ortheon-One parser performance, or vice versa.
 
 ### Release gate
 
-The project can quantify which architecture is better, where it fails, and how much explicit engineering structure contributes to downstream reasoning.
+The project can quantify:
+
+- modular vs unified parsing,
+- value of explicit engineering structure,
+- MicroLM capability over structured input,
+- larger-model gains from structured input,
+- failure modes and uncertainty.
 
 ---
 
@@ -883,20 +970,20 @@ Stabilize interfaces and documentation before the first major public research re
 
 ### Planned work
 
-- API freeze for supported EIR subset,
+- supported EIR API freeze,
 - benchmark freeze,
 - reproducible experiments,
-- model/data cards,
-- limitations,
-- known failure modes,
+- separate model cards for Ortheon-One and MicroLM,
+- model/data manifests,
+- limitations/failure modes,
 - example gallery,
 - citation instructions,
-- installation path,
+- installation workflow,
 - minimal inference workflow.
 
 ### Release gate
 
-A new researcher can reproduce the supported v1 pipeline and benchmark without private undocumented knowledge.
+A new researcher can reproduce the supported v1 parsing and downstream reasoning experiments without private undocumented knowledge.
 
 ---
 
@@ -904,7 +991,7 @@ A new researcher can reproduce the supported v1 pipeline and benchmark without p
 
 v2 begins only after the mechanical-drawing v1 system is stable enough to determine which abstractions are truly domain-independent.
 
-Potential v2 domains:
+Potential domains:
 
 - electrical/electronic schematics,
 - P&ID,
@@ -912,7 +999,7 @@ Potential v2 domains:
 - assembly-heavy drawings,
 - welding documentation.
 
-The intended architecture is not five unrelated parsers. It is:
+The goal is not five unrelated parsers:
 
 ```text
 mechanical parser --------+
@@ -922,7 +1009,7 @@ architectural parser -----+
 CAD/document adapters ----+
 ```
 
-v2 should therefore test whether EIR can become a common machine representation across engineering modalities.
+The same downstream reasoning boundary remains applicable: parsers produce EIR, reasoning systems consume it.
 
 ---
 
@@ -936,25 +1023,26 @@ v2 should therefore test whether EIR can become a common machine representation 
 | **1.3.x** | Can we reliably recover visual evidence? |
 | **1.4.x** | Can we reconstruct engineering entities and relationships? |
 | **1.5.x** | Can standards interpretation remain deterministic and traceable? |
-| **1.6.x** | Can one unified model recover the same structure? |
-| **1.7.x** | Can very small language models exploit high-quality EIR? |
-| **1.8.x** | Can the representation drive tools and reconstruction? |
-| **1.9.x** | Does the integrated system actually outperform simpler baselines? |
-| **2.0.0** | Can the representation generalize across engineering domains? |
+| **1.6.x** | Can **Ortheon-One** unify visual/semantic parsing? |
+| **1.7.x** | Can a **separate MicroLM** exploit Ortheon's EIR/EDL? |
+| **1.8.x** | Can EIR drive deterministic tools and reconstruction? |
+| **1.9.x** | Does the integrated architecture beat simpler baselines? |
+| **2.0.0** | Can EIR generalize across engineering domains? |
 
 ---
 
 # What should not happen
 
-To protect the research from scope collapse:
-
-1. Do not train Ortheon-One before the modular baseline and EIR exist.
-2. Do not claim standards compliance from model output alone.
-3. Do not use a large VLM as a hidden replacement for missing parser logic.
-4. Do not commit large datasets/checkpoints into Git.
-5. Do not optimize only OCR accuracy while ignoring entity/relation correctness.
-6. Do not silently collapse uncertain relations into certain constraints.
-7. Do not expand into another engineering domain before v1 mechanical parsing is measurable.
+1. Do not train Ortheon-One before the modular baseline and EIR/Ortheon-Parse contracts exist.
+2. **Do not merge Ortheon-One and Engineering MicroLM into one conceptual or physical model simply for convenience.**
+3. Do not report MicroLM reasoning scores as Ortheon-One parsing performance.
+4. Do not report Ortheon-One parser scores as evidence of general engineering reasoning.
+5. Do not claim standards compliance from model output alone.
+6. Do not use a large VLM as a hidden replacement for missing parser logic.
+7. Do not commit large datasets/checkpoints into Git.
+8. Do not optimize only OCR while ignoring entity/relation correctness.
+9. Do not silently collapse uncertain relations into certain constraints.
+10. Do not expand into another engineering domain before v1 mechanical parsing is measurable.
 
 ---
 
@@ -966,6 +1054,7 @@ Ortheon v1 succeeds if it can demonstrate, on a reproducible mechanical-drawing 
 2. important engineering entities and relations are recovered with measurable accuracy,
 3. uncertainty and provenance remain visible,
 4. deterministic standards/tool layers can operate on the representation,
-5. structured EIR improves downstream engineering QA/reasoning relative to raw OCR or direct visual prompting,
-6. at least one genuinely small language-model configuration can exploit EIR for useful engineering interaction,
-7. larger reasoning models benefit from receiving structured engineering state rather than being forced to reconstruct everything from pixels.
+5. Ortheon-One can be compared honestly with the modular visual parser at the same EIR boundary,
+6. structured EIR improves downstream engineering QA/reasoning relative to raw OCR or direct visual prompting,
+7. at least one genuinely small **separate Engineering MicroLM** can exploit EIR for useful engineering interaction,
+8. larger reasoning models benefit from structured engineering state rather than being forced to reconstruct everything from pixels.
