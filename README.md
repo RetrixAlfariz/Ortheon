@@ -13,7 +13,7 @@ The project deliberately treats OCR as only one part of the problem. Its primary
 - Active milestone: **v1.1.x - dataset foundation and Ortheon-Parse specification**
 - Research branch: `research/dataset-foundation`
 - Initial domain: **2D mechanical manufacturing drawings**
-- Desktop research UI: early engineering-inspector prototype under `apps/desktop/`
+- Desktop research UI: engineering-inspector prototype under `apps/desktop/`; current design/polish pass is **parked / bugfix-only**
 - Model weights: **not downloaded during the current foundation stage**
 
 See [`development_progress/status.md`](development_progress/status.md) for the live status and [`development_progress/README.md`](development_progress/README.md) for the full roadmap.
@@ -262,6 +262,27 @@ npm run dev
 Then open `http://localhost:5173`.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) before adding datasets, model artifacts, or schema-changing experiments.
+
+## Codex review workflow
+
+Codex is intended to be used as a repository auditor/checker between implementation passes. The detailed audit contract is in [`docs/CODEX_REVIEW.md`](docs/CODEX_REVIEW.md).
+
+For the current milestone, Codex should focus on **v1.1.0 dataset registry and acquisition** and verify the repository against the documented release gate rather than starting later research early.
+
+Current review priorities:
+
+```text
+1. Verify development_progress/status.md matches the repository.
+2. Audit v1.1.0 dataset manifests, registry, acquisition, storage metadata and availability checks.
+3. Verify the Python workflow is consistently uv-based and reproducible.
+4. Verify CI/tests pass without downloading models or large datasets.
+5. Preserve the Ortheon-One / MicroLM / standards boundaries.
+6. Treat the current UI as parked / bugfix-only.
+```
+
+A review-only Codex run should **not modify the repository**. It should report `PASS`, `PARTIAL`, `FAIL / MISSING`, risks, verified commands, and the ordered actions required to reach the active release gate. Implementation should only begin in a separate task after review findings are accepted.
+
+During the current foundation stage, a Codex review must not download model weights, start model training, download large datasets merely for testing, redesign the UI, freeze EIR prematurely, or expand into additional engineering domains.
 
 ## License
 
