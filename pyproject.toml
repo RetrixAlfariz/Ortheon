@@ -1,0 +1,52 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ortheon"
+version = "1.0.0"
+description = "Standards-aware visual engineering parser research platform"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [
+  { name = "RetrixAlfariz" }
+]
+keywords = [
+  "engineering-drawing",
+  "technical-drawing",
+  "ocr",
+  "document-understanding",
+  "computer-vision",
+  "cad",
+  "engineering-ai"
+]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence"
+]
+
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8",
+  "ruff>=0.6",
+  "mypy>=1.11"
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/ortheon"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
