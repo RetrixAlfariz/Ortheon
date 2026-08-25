@@ -7,18 +7,19 @@ until later milestones introduce concrete model pipelines.
 
 from __future__ import annotations
 
-from dataclasses import asdict, dataclass
-from datetime import datetime
 import importlib
 import importlib.metadata
 import json
 import os
-from pathlib import Path
 import platform
 import random
 import re
 import sys
-from typing import Any, Iterable
+from collections.abc import Iterable
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from pathlib import Path
+from typing import Any
 
 
 DEFAULT_SEED = 42
