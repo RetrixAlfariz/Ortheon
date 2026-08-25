@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Ortheon local datasets and generated data
+dataset/local/
+dataset/raw/
+dataset/processed/
+dataset/cache/
+dataset/downloads/
+
+# Model artifacts
+checkpoints/
+models/local/
+weights/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+*.onnx
+*.engine
+
+# Experiment outputs
+runs/
+outputs/
+artifacts/
+logs/
+
+# Large archives
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.7z
+
+# Keep manifests, schemas, scripts, fixtures, and documentation tracked.
