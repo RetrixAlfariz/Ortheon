@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "id": "mechvqa",
+  "name": "MechVQA VQA-only SFT",
+  "domain": "mechanical_2d",
+  "priority": "primary",
+  "source": {
+    "url": "https://huggingface.co/datasets/XiaofengAlg/MechVQA",
+    "version": "VQA SFT public release 2026-08-03; verify current revision",
+    "revision": null
+  },
+  "access": {
+    "method": "huggingface",
+    "repo_id": "XiaofengAlg/MechVQA",
+    "gated": null,
+    "instructions": "Dataset card describes a public release, but metadata may flag gated access. Confirm live permissions and authenticate if required; use a pinned commit SHA. Keep official evaluation benchmark separate."
+  },
+  "license": {
+    "declared": "Apache-2.0 (dataset card)",
+    "review_status": "rights_review_required",
+    "notes": "Dataset content includes source images from varied collections; verify permitted uses and dataset-level provenance. Release license does not automatically clear every third-party image right."
+  },
+  "storage": {
+    "download_bytes": 1650000000,
+    "processed_bytes": null
+  },
+  "counts": {
+    "qa_records": 13515,
+    "images": 3371,
+    "train_records": 12749,
+    "validation_records": 766
+  },
+  "supervision": {
+    "native": [
+      "vqa_question_answer",
+      "capability_category",
+      "difficulty",
+      "language",
+      "image_reference"
+    ],
+    "proposed_derived": [
+      "ocr_tokens",
+      "engineering_entities",
+      "dimension_to_feature",
+      "eir_constraints"
+    ]
+  },
+  "split": {
+    "group_by": "image_sha256_and_source_family",
+    "notes": "Preserve official validation and external benchmark; additionally examine near-duplicate parts across sets."
+  },
+  "expected_paths": [
+    "data/train.jsonl",
+    "data/val.jsonl"
+  ],
+  "sha256": {
+    "data/train.jsonl": "427d15a2a54a16bd5a4f3fb19e1476445f171d90a799eeada24ebebeffe110ee",
+    "data/val.jsonl": "8bf9dfe4e2e2e82cd08275cfe8ece5b84c121559a26a182d9b36d9aa5065028d"
+  }
+}

@@ -1,5 +1,7 @@
 # Ortheon Dataset Plan
 
+> **2D source update (2026-10-12):** See [2D_SOURCE_AUDIT.md](2D_SOURCE_AUDIT.md) for verified source counts, JSG supervision gaps, licensing cautions and a concrete acquisition order. The runnable registry is in [manifests/](manifests/README.md), using JSON manifests. The research overview below remains a hypothesis inventory, not evidence that samples have been downloaded or validated.
+
 This directory documents the datasets planned for Ortheon and the role each dataset plays in the research pipeline.
 
 Ortheon is not intended to learn engineering drawings as a plain `image -> text` OCR task. The target is a parsing-first system that can recover visual primitives, engineering entities, spatial relations, constraints, and eventually a standards-aware Engineering Intermediate Representation (EIR).

@@ -1,11 +1,11 @@
 # Ortheon Development Status
 
-**Last updated:** 2026-08-25  
+**Last updated:** 2026-10-12  
 **Active branch:** `research/dataset-foundation`  
 **Current generation:** `v1`  
 **Completed milestone:** `v1.0.x - Project and research foundation`  
 **Active milestone:** `v1.1.0 - Dataset registry and acquisition layer`  
-**Project state:** Foundation complete; reproducible dataset implementation begins
+**Project state:** Dataset manifest registry and offline tooling implemented; acquisition/integrity release gate still OPEN
 
 This file is the live operational status of Ortheon. The long-term roadmap and release gates live in [`README.md`](README.md).
 
@@ -123,25 +123,28 @@ The first release gate requires at least the first **three** to be reproducibly 
 
 ### `IN PROGRESS`
 
-- `dataset/manifests/` location and manifest contract exist.
-- `dataset/schemas/` staging location exists.
-- `dataset/scripts/` staging location exists.
-- dataset purpose/spec/native-vs-derived-variable documentation exists.
+- [x] Dataset manifests: Cadsy, MechVQA, TriView-CAD, SketchGraphs filtered, MechAtlas (publisher metadata; HF revisions still unpinned).
+- [x] Offline JSON registry loading/validation and `list`, `plan`, `status`, `verify` commands.
+- [x] Pinned Hugging Face CLI acquisition route plus explicit manual-source routing; not yet tested end-to-end with upstream datasets.
+- [x] 2D source/supervision audit in `dataset/2D_SOURCE_AUDIT.md`.
+- [ ] Independently reproduce actual acquisition for MechVQA, TriView-CAD and SketchGraphs filtered data.
+- [ ] Validate real sample counts, split identity, rights, archive checksums, and image/label integrity.
+- `dataset/schemas/` staging remains for v1.1.2; adapters and label validators are still queued.
 
 ### `ACTIVE` implementation tasks
 
-- [ ] Create a real manifest for MechVQA.
-- [ ] Create a real manifest for TriView-CAD.
-- [ ] Create a real manifest for SketchGraphs filtered data.
+- [x] Create a **provisional source manifest** for MechVQA; pin exact revision after acquisition.
+- [x] Create a source/version manifest for TriView-CAD; confirm downloaded archive hash.
+- [x] Create a filtered SketchGraphs manifest; confirm original split file hashes.
 - [ ] Create a real manifest for Fusion 360 reconstruction data.
 - [ ] Create a real manifest for the initial ABC subset.
-- [ ] Record canonical source/citation/license/version information.
-- [ ] Define expected local paths for each dataset.
-- [ ] Add storage-estimation metadata.
-- [ ] Implement registry loader/validator.
-- [ ] Implement acquisition commands/scripts where upstream distribution permits automation.
-- [ ] Make downloads resumable where practical.
-- [ ] Implement an availability/status check without downloading everything.
+- [x] Record publisher links, declared licenses, published versions and review-required rights (exact HF revision still pending).
+- [x] Define local raw dataset paths and available known filenames; unknown upstream archive layouts remain explicitly unverified.
+- [x] Add known publisher size estimates and null for unverified sizes.
+- [x] Implement registry loader/validator.
+- [x] Add pinned HF-CLI acquisition and manual-source instructions; real end-to-end acquisition not yet verified.
+- [ ] Test HF CLI resume behavior on real dataset; manual sources require documented resume and integrity approach.
+- [x] Implement offline availability/status check without downloading anything.
 
 ### v1.1.0 release gate
 

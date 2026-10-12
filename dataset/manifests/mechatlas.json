@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "id": "mechatlas",
+  "name": "MechAtlas drawing-to-CAD paired dataset",
+  "domain": "mechanical_2d",
+  "priority": "future",
+  "source": {
+    "url": "https://huggingface.co/datasets/XUXU666/MechAtlas",
+    "version": "dataset card reviewed 2026-10-12; gated and updated 2026-10-08",
+    "revision": null
+  },
+  "access": {
+    "method": "huggingface",
+    "repo_id": "XUXU666/MechAtlas",
+    "gated": true,
+    "instructions": "Request and obtain dataset owner approval first; access is manual and gated. Authenticate with Hugging Face, pin the approved commit, and avoid automatically downloading the full 18GB during foundation checks."
+  },
+  "license": {
+    "declared": "CC BY 4.0 (publisher card)",
+    "review_status": "rights_review_required",
+    "notes": "Verify publisher authorization for industrial drawings, copyright/identifying marks, proprietary production details and redistribution before research release."
+  },
+  "storage": {
+    "download_bytes": 18000000000,
+    "processed_bytes": null
+  },
+  "counts": {
+    "pairs": 49687,
+    "pdf_drawings": 49687,
+    "step_models": 49687
+  },
+  "supervision": {
+    "native": [
+      "pdf_step_pair",
+      "source_sample_id"
+    ],
+    "proposed_derived": [
+      "drawing_text",
+      "projected_geometry",
+      "dimension_to_feature",
+      "eir_constraints"
+    ]
+  },
+  "split": {
+    "group_by": "paired_part_id",
+    "notes": "Group PDF/STEP pair and related variants together; preserve leading zeroes in sample IDs."
+  },
+  "expected_paths": [],
+  "sha256": {}
+}

@@ -208,7 +208,7 @@ Local raw/processed datasets, checkpoints, caches, logs, runs, and generated art
 
 ## Dataset strategy
 
-The current dataset plan is documented in [`dataset/README.md`](dataset/README.md). Core sources include MechVQA, SketchGraphs, ABC, TriView-CAD, and Fusion 360 Gallery, supplemented by technical-document datasets where useful.
+The current dataset plan is documented in [`dataset/README.md`](dataset/README.md), with a [2026-10-12 2D source audit](dataset/2D_SOURCE_AUDIT.md) and executable [dataset manifests/registry](dataset/manifests/README.md). Local registry commands include `uv run python -m ortheon.datasets validate` and `uv run python -m ortheon.datasets status`. Core sources include MechVQA, SketchGraphs, ABC, TriView-CAD, and Fusion 360 Gallery, supplemented by technical-document datasets where useful.
 
 Ortheon's project-native dataset, **Ortheon-Parse**, is planned as a hierarchical P1-P7 supervision corpus rather than a plain OCR dataset. It is expected to become the bridge from the modular teacher system to Ortheon-One training.
 

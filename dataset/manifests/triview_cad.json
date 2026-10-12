@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "triview_cad",
+  "name": "TriView-CAD",
+  "domain": "mechanical_2d",
+  "priority": "primary",
+  "source": {
+    "url": "https://data.mendeley.com/datasets/ynyjsmcjd6/1",
+    "version": "Mendeley Data v1; DOI 10.17632/ynyjsmcjd6.1",
+    "revision": null
+  },
+  "access": {
+    "method": "manual",
+    "gated": false,
+    "instructions": "From the fixed Mendeley Data version 1 DOI page use Download All, extract into dataset/local/raw/triview_cad, retain original filenames/splits and record archive SHA-256 and acquisition date. Automated direct archive endpoint not verified."
+  },
+  "license": {
+    "declared": "CC BY 4.0 (Mendeley)",
+    "review_status": "declared_unverified",
+    "notes": "Preserve attribution and DOI; avoid altering the published part-wise train/validation/test splits."
+  },
+  "storage": {
+    "download_bytes": null,
+    "processed_bytes": null
+  },
+  "counts": {
+    "samples": null
+  },
+  "supervision": {
+    "native": [
+      "front_view",
+      "top_view",
+      "side_view",
+      "consistency_label",
+      "published_split"
+    ],
+    "proposed_derived": [
+      "cross_view_feature_correspondence",
+      "eir_view_graph"
+    ]
+  },
+  "split": {
+    "group_by": "part_id",
+    "notes": "Keep original published part-disjoint splits; do not re-split image combinations."
+  },
+  "expected_paths": [],
+  "sha256": {}
+}

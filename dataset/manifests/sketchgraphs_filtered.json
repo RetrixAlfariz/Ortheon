@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "id": "sketchgraphs_filtered",
+  "name": "SketchGraphs filtered construction sequences",
+  "domain": "cad_sketch_2d",
+  "priority": "supporting",
+  "source": {
+    "url": "https://princetonlips.github.io/SketchGraphs/data.html",
+    "version": "filtered t16 training/validation/test construction-sequence release",
+    "revision": null
+  },
+  "access": {
+    "method": "manual",
+    "gated": false,
+    "instructions": "Follow the official SketchGraphs 'Filtered sequence' train, validation and test links. Save each original file under dataset/local/raw/sketchgraphs_filtered. Record file sizes, checksums and publication source. Do not accidentally acquire the separate 43GB raw or 15GB full-sequence release."
+  },
+  "license": {
+    "declared": "MIT software only; underlying sketches separately owned",
+    "review_status": "rights_review_required",
+    "notes": "The SketchGraphs code license does not license raw Onshape CAD sketch content. Verify upstream permissions before redistribution or commercial use."
+  },
+  "storage": {
+    "download_bytes": null,
+    "processed_bytes": null
+  },
+  "counts": {
+    "sketches_project_overall": 15000000,
+    "filtered_samples": null
+  },
+  "supervision": {
+    "native": [
+      "geometric_primitive",
+      "sketch_constraint",
+      "construction_sequence",
+      "sketch_id"
+    ],
+    "proposed_derived": [
+      "rendered_sketch_image",
+      "normalized_geometry_graph"
+    ]
+  },
+  "split": {
+    "group_by": "sketch_document_id",
+    "notes": "Use published split files; preserve original sketch identifiers across related documents."
+  },
+  "expected_paths": [],
+  "sha256": {}
+}

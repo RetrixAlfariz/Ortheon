@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "id": "cadsy",
+  "name": "Cadsy CAD Technical Drawings",
+  "domain": "mechanical_2d",
+  "priority": "primary",
+  "source": {
+    "url": "https://huggingface.co/datasets/cadsy/cad-technical-drawings",
+    "version": "public sample; verified 2026-10-12",
+    "revision": null
+  },
+  "access": {
+    "method": "huggingface",
+    "repo_id": "cadsy/cad-technical-drawings",
+    "gated": false,
+    "instructions": "Use an exact Hugging Face repository revision; images and labels are referenced by metadata.jsonl."
+  },
+  "license": {
+    "declared": "Apache-2.0 (dataset card)",
+    "review_status": "rights_review_required",
+    "notes": "Generated from Zero-to-CAD-100k STEP assets. Review upstream geometry rights and the use of ISO/ASME-style annotations separately."
+  },
+  "storage": {
+    "download_bytes": 25900000,
+    "processed_bytes": null
+  },
+  "counts": {
+    "records": 65,
+    "parts": 65,
+    "drawings": 130
+  },
+  "supervision": {
+    "native": [
+      "annotation_bbox",
+      "annotation_type",
+      "annotation_text",
+      "view_label",
+      "drawing_style"
+    ],
+    "proposed_derived": [
+      "dimension_to_feature",
+      "geometry_primitives",
+      "eir_constraints"
+    ]
+  },
+  "split": {
+    "group_by": "part_id",
+    "notes": "Both ISO and ASME variants of one part must stay in the same split."
+  },
+  "expected_paths": [
+    "metadata.jsonl"
+  ],
+  "sha256": {}
+}
