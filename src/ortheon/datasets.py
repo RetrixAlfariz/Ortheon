@@ -14,7 +14,7 @@ import re
 import shutil
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
 
@@ -272,7 +272,7 @@ def _fetch(
         "dataset_id": manifest["id"],
         "source": manifest["source"]["url"],
         "revision": revision,
-        "acquired_at_utc": datetime.now(timezone.utc).isoformat(),
+        "acquired_at_utc": datetime.now(UTC).isoformat(),
         "method": "huggingface_snapshot",
         "integrity": "unverified",
     }
